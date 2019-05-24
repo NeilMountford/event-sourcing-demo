@@ -12,11 +12,11 @@ namespace EventSourcedVouchers.Tests
     using Shouldly;
     using Xunit;
 
-    public class BuyVoucherTests : IClassFixture<WebApplicationFactory<Startup>>
+    public class VoucherTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         private readonly HttpClient client;
 
-        public BuyVoucherTests(WebApplicationFactory<Startup> factory)
+        public VoucherTests(WebApplicationFactory<Startup> factory)
         {
             this.client = factory.CreateClient();
         }
