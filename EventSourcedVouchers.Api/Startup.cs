@@ -13,6 +13,8 @@ using Microsoft.Extensions.Options;
 
 namespace EventSourcedVouchers.Api
 {
+    using EventSourcedVouchers.Api.EventSourcing;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -26,6 +28,7 @@ namespace EventSourcedVouchers.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddSingleton<VoucherEventStore>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,5 +1,6 @@
 namespace EventSourcedVouchers.Tests
 {
+    using System;
     using System.Net;
     using System.Net.Http;
     using System.Text;
@@ -34,6 +35,36 @@ namespace EventSourcedVouchers.Tests
                 var buyVoucherResponse = JsonConvert.DeserializeObject<BuyVoucherResponse>(await buyResponse.Content.ReadAsStringAsync());
                 buyVoucherResponse.VoucherCode.ShouldNotBeNullOrEmpty();
             }
+        }
+        
+        [Fact]
+        public async Task WhenAVoucherIsBoughtTheVoucherInformationCanBeRetrieved()
+        {
+            var buyRequest = new BuyVoucherRequest(50m);
+            string voucherCode;
+            
+            using (var requestContent =
+                new StringContent(JsonConvert.SerializeObject(buyRequest), Encoding.UTF8, "application/json"))
+            {
+                var buyResponse = await this.client.PostAsync("/api/vouchers/buy", requestContent);
+                var buyVoucherResponse = JsonConvert.DeserializeObject<BuyVoucherResponse>(await buyResponse.Content.ReadAsStringAsync());
+                voucherCode = buyVoucherResponse.VoucherCode;
+            }
+            
+            var getResponse = await this.client.GetAsync($"/api/vouchers/{voucherCode}");
+            getResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+            var voucher = JsonConvert.DeserializeObject<Voucher>(await getResponse.Content.ReadAsStringAsync());
+            voucher.VoucherCode.ShouldBe(voucherCode);
+            voucher.OriginalAmount.ShouldBe(50m);
+            voucher.CurrentAmount.ShouldBe(50m);
+        }
+        
+        [Fact]
+        public async Task WhenAVoucherThatDoesNotExistIsRequestedANotFoundIsGiven()
+        {
+            var fakeCode = Guid.NewGuid().ToString();
+            var getResponse = await this.client.GetAsync($"/api/vouchers/{fakeCode}");
+            getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         }
     }
 }
