@@ -22,7 +22,6 @@ namespace EventSourcedVouchers.Api.Controllers
             this.voucherEventStore = voucherEventStore;
         }
         
-        // POST api/values
         [HttpPost]
         [Route("buy")]
         public IActionResult Buy([FromBody] BuyVoucherRequest buyVoucherRequest)
@@ -30,6 +29,14 @@ namespace EventSourcedVouchers.Api.Controllers
             var newVoucherCode = Guid.NewGuid().ToString();
             this.voucherEventStore.AppendEvent(newVoucherCode, new VoucherPurchased(buyVoucherRequest.Amount));
             return this.Ok(new BuyVoucherResponse(newVoucherCode));
+        }
+        
+        [HttpPost]
+        [Route("spend")]
+        public IActionResult Spend([FromBody] SpendVoucherRequest spendVoucherRequest)
+        {
+            this.voucherEventStore.AppendEvent(spendVoucherRequest.VoucherCode,new VoucherSpent(spendVoucherRequest.Amount));
+            return this.Ok();
         }
 
         [HttpGet]

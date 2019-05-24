@@ -66,5 +66,36 @@ namespace EventSourcedVouchers.Tests
             var getResponse = await this.client.GetAsync($"/api/vouchers/{fakeCode}");
             getResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         }
+        
+        [Fact]
+        public async Task WhenAVoucherIsPartiallySpentTheCurrentAmountIsCorrect()
+        {
+            var buyRequest = new BuyVoucherRequest(50m);
+            string voucherCode;
+            
+            using (var requestContent =
+                new StringContent(JsonConvert.SerializeObject(buyRequest), Encoding.UTF8, "application/json"))
+            {
+                var buyResponse = await this.client.PostAsync("/api/vouchers/buy", requestContent);
+                var buyVoucherResponse = JsonConvert.DeserializeObject<BuyVoucherResponse>(await buyResponse.Content.ReadAsStringAsync());
+                voucherCode = buyVoucherResponse.VoucherCode;
+            }
+            
+            var spendRequest = new SpendVoucherRequest(voucherCode, 25);
+            
+            using (var requestContent =
+                new StringContent(JsonConvert.SerializeObject(spendRequest), Encoding.UTF8, "application/json"))
+            {
+                var spendResponse = await this.client.PostAsync("/api/vouchers/spend", requestContent);
+                spendResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+            }
+            
+            var getResponse = await this.client.GetAsync($"/api/vouchers/{voucherCode}");
+            getResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+            var voucher = JsonConvert.DeserializeObject<Voucher>(await getResponse.Content.ReadAsStringAsync());
+            voucher.VoucherCode.ShouldBe(voucherCode);
+            voucher.OriginalAmount.ShouldBe(50m);
+            voucher.CurrentAmount.ShouldBe(25m);
+        }
     }
 }

@@ -21,6 +21,11 @@ namespace EventSourcedVouchers.Api.EventSourcing
             this.currentAmount = startingAmount;
         }
 
+        public void AdjustCurrentAmount(decimal adjustmentAmount)
+        {
+            this.currentAmount += adjustmentAmount;
+        }
+
         public Voucher Build()
         {
             return new Voucher(this.voucherCode, this.originalAmount, this.currentAmount);
