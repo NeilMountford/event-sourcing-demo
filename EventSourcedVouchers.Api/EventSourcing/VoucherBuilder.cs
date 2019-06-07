@@ -4,7 +4,7 @@ namespace EventSourcedVouchers.Api.EventSourcing
 
     public class VoucherBuilder
     {
-        private string voucherCode;
+        private readonly string voucherCode;
         private decimal originalAmount;
         private decimal currentAmount;
 
